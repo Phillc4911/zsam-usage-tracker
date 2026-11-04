@@ -1,0 +1,5 @@
+PID,Product,Metric,Licensed_MSU,Annual_Cost,Renewal_Date,Contract,Notes
+5650-ZOS,z/OS,MLC,900,1450000,2027-05-31,SAMPLE-ZOS,Fictional example
+5655-CIC,CICS Transaction Server,MLC,450,620000,2026-12-31,SAMPLE-CIC,Fictional example
+5698-DB2,Db2 for z/OS,MLC,600,880000,2027-03-31,SAMPLE-DB2,Fictional example
+5655-FMG,File Manager for z/OS,IPLA,100,42000,2027-01-15,SAMPLE-FMG,Fictional example
