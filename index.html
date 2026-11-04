@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>zSAM Usage Tracker</title>
+  <meta name="description" content="Track IBM Z software usage against entitlements. Runs entirely in your browser.">
+  <!-- Lets the page open full-screen when added to the iPad / iPhone Home Screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="zSAM">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">z</span>
+      <div>
+        <h1>zSAM Usage Tracker</h1>
+        <p class="sub">IBM Z software usage vs. entitlements · data stays on this device</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="dashboard" role="tab">Dashboard</button>
+      <button class="tab" data-tab="usage" role="tab">Usage</button>
+      <button class="tab" data-tab="entitlements" role="tab">Entitlements</button>
+      <button class="tab" data-tab="unused" role="tab">Unused</button>
+      <button class="tab" data-tab="renewals" role="tab">Renewals</button>
+      <button class="tab" data-tab="data" role="tab">Data</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="tab-dashboard" class="panel active">
+      <div id="empty-hint" class="card hint hidden">
+        <h2>Welcome</h2>
+        <p>No data yet. Try it out with fictional sample data, or add your own on the
+          <b>Usage</b> and <b>Entitlements</b> tabs.</p>
+        <button class="btn primary" data-action="load-sample">Load sample data</button>
+      </div>
+
+      <div class="toolbar">
+        <label>Look-back window
+          <select id="window-select">
+            <option value="3">Last 3 months</option>
+            <option value="6">Last 6 months</option>
+            <option value="12" selected>Last 12 months</option>
+            <option value="0">All months</option>
+          </select>
+        </label>
+        <span id="period-label" class="muted"></span>
+      </div>
+
+      <div class="kpis" id="kpis"></div>
+
+      <div class="card">
+        <h2>Licensed vs. used (peak MSU)</h2>
+        <p class="muted small">Peak = highest monthly MSU in the window (summed across CPCs/LPARs). Tap a row to see its trend.</p>
+        <div class="table-wrap"><table id="dash-table"></table></div>
+      </div>
+
+      <div class="card" id="trend-card">
+        <h2 id="trend-title">Monthly trend</h2>
+        <div id="trend-chart" class="chart"><p class="muted">Tap a product above to see its monthly trend.</p></div>
+      </div>
+    </section>
+
+    <!-- USAGE -->
+    <section id="tab-usage" class="panel">
+      <div class="card">
+        <h2>Import usage (SCRT-style CSV)</h2>
+        <p>One row per product per LPAR per month. Columns (header names are flexible):</p>
+        <code class="block">Month,CPC,LPAR,PID,Product,Peak_MSU</code>
+        <p class="muted small">Importing a month again replaces the matching rows, so you will not double count.</p>
+        <div class="row">
+          <label class="btn primary file-btn">Choose CSV file…
+            <input type="file" id="usage-file" accept=".csv,text/csv,text/plain">
+          </label>
+          <button class="btn" data-action="template-usage">Download blank template</button>
+        </div>
+        <div id="usage-msg" class="msg"></div>
+      </div>
+      <div class="card">
+        <h2>Months loaded</h2>
+        <div class="table-wrap"><table id="months-table"></table></div>
+      </div>
+    </section>
+
+    <!-- ENTITLEMENTS -->
+    <section id="tab-entitlements" class="panel">
+      <div class="card">
+        <h2 id="ent-form-title">Add entitlement</h2>
+        <form id="ent-form" autocomplete="off">
+          <input type="hidden" name="id">
+          <div class="grid">
+            <label>PID <input name="pid" required placeholder="5650-ZOS"></label>
+            <label>Product <input name="product" required placeholder="z/OS"></label>
+            <label>Pricing metric
+              <select name="metric">
+                <option>MLC</option><option>IPLA</option><option>TFP</option><option>Other</option>
+              </select>
+            </label>
+            <label>Licensed / budgeted MSU <input name="licensedMsu" type="number" min="0" step="any" inputmode="decimal"></label>
+            <label>Annual cost ($) <input name="annualCost" type="number" min="0" step="any" inputmode="decimal"></label>
+            <label>S&amp;S / renewal date <input name="renewal" type="date"></label>
+            <label>Contract / ref <input name="contract"></label>
+            <label class="wide">Notes <input name="notes"></label>
+          </div>
+          <div class="row">
+            <button class="btn primary" type="submit" id="ent-submit">Add entitlement</button>
+            <button class="btn" type="button" id="ent-cancel" hidden>Cancel edit</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Import entitlements (CSV)</h2>
+        <code class="block">PID,Product,Metric,Licensed_MSU,Annual_Cost,Renewal_Date,Contract,Notes</code>
+        <p class="muted small">Rows with a PID that already exists update that entitlement.</p>
+        <div class="row">
+          <label class="btn primary file-btn">Choose CSV file…
+            <input type="file" id="ent-file" accept=".csv,text/csv,text/plain">
+          </label>
+          <button class="btn" data-action="template-ent">Download blank template</button>
+        </div>
+        <div id="ent-msg" class="msg"></div>
+      </div>
+      <div class="card">
+        <h2>Entitlements</h2>
+        <div class="table-wrap"><table id="ent-table"></table></div>
+      </div>
+    </section>
+
+    <!-- UNUSED -->
+    <section id="tab-unused" class="panel">
+      <div class="toolbar">
+        <label>No usage for
+          <select id="unused-select">
+            <option value="3">3+ months</option>
+            <option value="6" selected>6+ months</option>
+            <option value="12">12+ months</option>
+          </select>
+        </label>
+        <label>Low use below
+          <select id="lowuse-select">
+            <option value="10">10% of license</option>
+            <option value="25" selected>25% of license</option>
+            <option value="50">50% of license</option>
+          </select>
+        </label>
+      </div>
+      <div class="card">
+        <h2>Unused software</h2>
+        <p class="muted small">Entitled products with no recorded usage in the period. Candidates for removal or S&amp;S cancellation.</p>
+        <div class="table-wrap"><table id="unused-table"></table></div>
+      </div>
+      <div class="card">
+        <h2>Low-use software</h2>
+        <p class="muted small">Peak usage in the period is well below the licensed MSU. Candidates for downsizing.</p>
+        <div class="table-wrap"><table id="lowuse-table"></table></div>
+      </div>
+      <div class="card">
+        <h2>Used but not entitled</h2>
+        <p class="muted small">Usage records with no matching entitlement PID. Check for compliance exposure.</p>
+        <div class="table-wrap"><table id="unlicensed-table"></table></div>
+      </div>
+    </section>
+
+    <!-- RENEWALS -->
+    <section id="tab-renewals" class="panel">
+      <div class="toolbar">
+        <label>Show renewals within
+          <select id="renew-select">
+            <option value="30">30 days</option>
+            <option value="60">60 days</option>
+            <option value="90" selected>90 days</option>
+            <option value="180">180 days</option>
+            <option value="365">1 year</option>
+          </select>
+        </label>
+      </div>
+      <div class="card">
+        <h2>Upcoming S&amp;S / renewals</h2>
+        <div class="table-wrap"><table id="renew-table"></table></div>
+      </div>
+    </section>
+
+    <!-- DATA -->
+    <section id="tab-data" class="panel">
+      <div class="card">
+        <h2>Back up &amp; restore</h2>
+        <p>Your data is saved only in this browser on this device. Nothing is uploaded.
+          Export a backup file regularly. On iPad it saves to the <b>Files</b> app.</p>
+        <div class="row">
+          <button class="btn primary" data-action="export">Export backup (.json)</button>
+          <label class="btn file-btn">Restore backup…
+            <input type="file" id="restore-file" accept=".json,application/json">
+          </label>
+        </div>
+        <div id="data-msg" class="msg"></div>
+      </div>
+      <div class="card">
+        <h2>Sample data</h2>
+        <p>Load fictional sample data to explore the app. This replaces your current data.</p>
+        <button class="btn" data-action="load-sample">Load sample data</button>
+      </div>
+      <div class="card danger-zone">
+        <h2>Clear everything</h2>
+        <p>Deletes all usage and entitlements from this browser.</p>
+        <button class="btn danger" data-action="clear">Clear all data</button>
+      </div>
+      <div class="card">
+        <h2>Storage</h2>
+        <p id="storage-info" class="muted"></p>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
