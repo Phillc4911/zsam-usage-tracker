@@ -1,0 +1,31 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #000; color: #4fd; font: 15px/1.4 ui-monospace, Menlo, monospace; -webkit-text-size-adjust: 100%; }
+.dbg { max-width: 1000px; margin: 0 auto; padding: 16px; }
+h1 { color: #ff4; font-size: 22px; margin: 0 0 4px; }
+h2 { color: #ff4; font-size: 17px; margin: 20px 0 6px; }
+.sub { color: #8cf; margin: 0 0 12px; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; align-items: center; }
+.group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+button { min-height: 44px; min-width: 44px; padding: 0 14px; background: #002; color: #4fd; border: 1px solid #4fd; font: inherit; border-radius: 4px; }
+button.on { background: #4fd; color: #000; }
+input { min-height: 44px; font: inherit; background: #001; color: #4f4; border: 1px solid #4f4; padding: 0 8px; width: 9em; border-radius: 4px; }
+.slider { display: flex; flex-direction: column; gap: 2px; }
+.slider input { width: 240px; padding: 0; border: 0; background: none; }
+.val { color: #fff; min-width: 6em; text-align: center; }
+.chart { width: 100%; height: auto; background: #000; border: 1px solid #234; }
+.grid { stroke: #123; }
+.axis { fill: #8cf; font-size: 12px; }
+.demand { fill: none; stroke: #666; stroke-width: 1; stroke-dasharray: 3 3; }
+.consumed { fill: none; stroke: #4f4; stroke-width: 1.5; }
+.r4ha { fill: none; stroke: #ff4; stroke-width: 2.5; }
+.dc { stroke: #f44; stroke-width: 2; stroke-dasharray: 8 4; }
+.behind { fill: #f4f; opacity: 0.45; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; list-style: none; padding: 0; margin: 8px 0 12px; }
+.k { display: inline-block; width: 18px; height: 4px; margin-right: 6px; vertical-align: middle; }
+.k.demand { background: #666; } .k.consumed { background: #4f4; } .k.r4ha { background: #ff4; } .k.dc { background: #f44; } .k.behind { background: #f4f; }
+.facts { border-collapse: collapse; width: 100%; }
+.facts th, .facts td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #123; vertical-align: top; }
+.facts th { color: #4fd; font-weight: normal; }
+.facts td { color: #fff; }
+@media (max-width: 800px) { .facts thead { display: none; } .facts tr { display: block; padding: 6px 0; } .facts th, .facts td { display: block; border: 0; padding: 2px 8px; } }
